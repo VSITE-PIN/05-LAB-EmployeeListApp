@@ -1,0 +1,47 @@
+﻿@page "/employees"
+@inject EmployeesServices EmployeeService
+
+<h1>My Employee List</h1>
+<p>This component demonstrates managing an Employee list.</p>
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in employees)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Department</td>
+                    <td>@item.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Employee> employees;
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    protected async Task Load()
+    {
+        employees = await employeeService.GetEmployeesAsync();
+    }
+}
