@@ -1,0 +1,107 @@
+﻿@page "/employees"
+@using EmployeeListApp.Data;
+@using EmployeeListApp.Services;
+@inject EmployeeService employeeService
+
+<h1>Employees List</h1>
+<p>This component demonstrates managing an Employees list.</p>
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <button @onclick="@Add" class="btn btn-success">Add</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>FullName</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in employees)
+            {
+                <tr @onclick="@(() => Show(item.Id))">
+                    >
+                    <td>@item.Id</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Department</td>
+                    <td>@item.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (employees != null && mode == MODE.Add)
+{
+    <input placeholder="FullName" @bind="@fullName" />
+    <br />
+    <input placeholder="Department" @bind="@department" />
+    <br />
+    <input placeholder="Salary" @bind="@salary" />
+    <br />
+    <button @onclick="@Insert" class="btn btn-warning">Insert</button>
+}
+
+@code {
+    string id;
+    string fullName;
+    string department;
+    decimal salary;
+    private enum MODE { None, Add, EditDelete };
+    MODE mode = MODE.None;
+
+    List<Employee> employees;
+    Employee employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+    protected async Task Load()
+    {
+        employees = await employeeService.GetAllEmployees();
+    }
+    protected void Add()
+    {
+        ClearFields();
+        mode = MODE.Add;
+    }
+
+    protected async Task Show(string id)
+    {
+        employee = await employeeService.GetEmployeeById(id);
+        id = employee.Id;
+        fullName = employee.FullName;
+        department = employee.Department;
+        salary = employee.Salary;
+        mode = MODE.EditDelete;
+    }
+
+    protected void ClearFields()
+    {
+        id = string.Empty;
+        fullName = string.Empty;
+        department = string.Empty;
+        salary = 0;
+    }
+    protected async Task Insert()
+    {
+        Employee e = new Employee()
+            {
+                Id = Guid.NewGuid().ToString(),
+                FullName = fullName,
+                Department = department,
+                Salary = salary
+            };
+        await employeeService.InsertEmployeeAsync(e);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+}
