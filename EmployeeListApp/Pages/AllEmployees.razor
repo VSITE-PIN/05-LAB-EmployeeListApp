@@ -1,0 +1,148 @@
+﻿@page "/employees"
+@using EmployeeListApp.Services
+@using EmployeeListApp.Data
+@inject EmployeesService employeeService
+
+<h1>Employees</h1>
+
+@if (employees == null)
+{
+ <p><em>Loading...</em></p>
+}
+else
+{
+	<button class="btn btn-primary mb-3" @onclick="ShowAddForm">Add Employee</button>
+
+	 <table class="table">
+		 <thead>
+			 <tr>
+			 <th>ID</th>
+			 <th>Full Name</th>
+			 <th>Department</th>
+			 <th>Salary</th>
+			 <th>Actions</th>
+			 </tr>
+		 </thead>
+		 <tbody>
+			 @foreach (var item in employees)
+			 {
+				 <tr>
+					 <td>@item.Id</td>
+					 <td>@item.FullName</td>
+					<td>@item.Department</td>
+					<td>@item.Salary</td>
+					<td>
+						<button class="btn btn-info btn-sm" @onclick="() => ShowDetails(item.Id)">Details</button>
+						<button class="btn btn-info btn-sm" @onclick="() => ShowUpdateForm(item.Id)">Update</button>
+						<button class="btn btn-danger btn-sm" @onclick="() => OnDelete(item.Id)">Delete</button>
+					</td>
+				</tr>
+			}
+		 </tbody>
+	 </table>
+}
+
+@if (showForm)
+{
+	<div class="card mt-3">
+		<div class="card-header">
+			<h5>@(isUpdating ? "Update Employee" : "Add Employee")</h5>
+		</div>
+		<div class="card-body">
+			<div class="mb-3">
+				<label for="fullName" class="form-label">Full Name</label>
+				<input type="text" id="fullName" class="form-control" @bind="formModel.FullName" />
+			</div>
+			<div class="mb-3">
+				<label for="department" class="form-label">Department</label>
+				<input type="text" id="department" class="form-control" @bind="formModel.Department" />
+			</div>
+			<div class="mb-3">
+				<label for="salary" class="form-label">Salary</label>
+				<input type="number" id="salary" class="form-control" @bind="formModel.Salary" />
+			</div>
+			<button class="btn btn-success" @onclick="SaveEmployee">Save</button>
+			<button class="btn btn-secondary" @onclick="CancelForm">Cancel</button>
+		</div>
+	</div>
+}
+
+@if (selectedEmployee != null)
+{
+    <div class="card">
+        <div class="card-header">
+            <h2>Employee Details</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>ID:</strong> @selectedEmployee.Id</p>
+            <p><strong>Full Name:</strong> @selectedEmployee.FullName</p>
+            <p><strong>Department:</strong> @selectedEmployee.Department</p>
+            <p><strong>Salary:</strong> @selectedEmployee.Salary</p>
+            <button class="btn btn-secondary" @onclick="BackToList">Close</button>
+        </div>
+    </div>
+}
+
+@code {
+	private List<Employee> employees;
+    private Employee formModel = new Employee();
+    private bool showForm = false;
+    private bool isUpdating = false;
+
+	private Employee selectedEmployee = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeService.GetAllEmployeesAsync();
+    }
+
+    private void ShowAddForm()
+    {
+        formModel = new Employee();
+        isUpdating = false;
+        showForm = true;
+    }
+
+    private async void ShowUpdateForm(string id)
+    {
+        formModel = await employeeService.GetEmployeeByIdAsync(id);
+        isUpdating = true;
+        showForm = true;
+    }
+
+    private async Task SaveEmployee()
+    {
+        if (isUpdating)
+        {
+            await employeeService.UpdateEmployeeAsync(formModel);
+        }
+        else
+        {
+            await employeeService.AddEmployeeAsync(formModel);
+        }
+
+        employees = await employeeService.GetAllEmployeesAsync();
+        showForm = false;
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+    }
+
+    private async void OnDelete(string id)
+    {
+        await employeeService.DeleteEmployeeAsync(id);
+        employees = await employeeService.GetAllEmployeesAsync();
+    }
+
+    private async Task ShowDetails(string id)
+    {
+        selectedEmployee = await employeeService.GetEmployeeByIdAsync(id);
+    }
+
+    private void BackToList()
+    {
+        selectedEmployee = null;
+    }
+}
