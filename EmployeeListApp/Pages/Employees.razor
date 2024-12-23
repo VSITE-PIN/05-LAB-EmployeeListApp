@@ -1,0 +1,156 @@
+﻿using EmployeeListApp.Pages.Employees;
+using EmployeeListApp.Services;
+@page "/employees"
+@inject EmployeesServices employeesService
+<h3>Employees</h3>
+<h1>Employees List</h1>
+<p>This component demonstrates managing a Employee list.</p>
+@if (employee == null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<button @onclick="@Add" class="btn btn-success">Add</button>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>FullName</th>
+				<th>Department</th>
+				<th>Salary</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in employee)
+			{	
+				<tr @onclick="@(() => Show(item.Id))"></tr>
+				<tr>
+					<td>@item.Id</td>
+					<td>@item.FullName</td>
+					<td>@item.Department</td>
+					<td>@item.Salary</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+@if (employees != null && mode == MODE.Add)
+{
+	<input placeholder="Id" @bind="@Id" />
+	<br />
+	<input placeholder="FullName" @bind="@FullName" />
+	<br />
+	<input placeholder="Department" @bind="@Department" />
+	<br />
+	<input placeholder="Salary" @bind="@Salary" />
+	<button @onclick="@Insert" class="btn btn-warning">Insert</button>
+}
+@if (employee != null && mode == MODE.EditDelete) // Update & Delete form
+{
+	<input type="hidden" @bind="@Id" />
+	<br />
+	<input placeholder="Name and Last Name" @bind="@FullName" />
+	<br />
+	<input placeholder="Department" @bind="@Department" />
+	<br />
+	<input placeholder="Salary" @bind="@Salary" />
+	<br />
+	<button @onclick="@Update" class="btn btn-primary">Update</button>
+	<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+	<button @onclick="@Delete" class="btn btn-danger">Delete</button>
+}
+
+
+@code {
+    Employees employees;
+    private const string V = "Salary";
+    string Id;
+    string FullName;
+    string Department;
+    string Salary;
+    private enum MODE { None, Add, EditDelete };
+    MODE mode = MODE.None;
+    List<Employee> employee;
+
+    public Employees(List<Employee> employees) => this.employee = employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+    protected async Task Load()
+    {
+        employee = await employeesService.GetEmployeesAsync();
+    }
+
+    protected void Add()
+    {
+        ClearFields();
+        mode = MODE.Add;
+    }
+    //ova metoda složi da resetiramo vrijednosti u varijablama koje nam služe za //dohvaćanje
+    //podataka od korisnika
+    protected void ClearFields()
+    {
+        Id = string.Empty;
+        FullName = string.Empty;
+        Department = string.Empty;
+        Salary = string.Empty;
+    }
+    protected async Task Insert()
+    {
+        Employee e = new Employee()
+			{
+				Id = Guid.NewGuid().ToString(),
+				FullName = FullName,
+				Department = Department,
+			};
+        await employeesService.InsertEmployeeAsync(e);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+    protected async Task Show(string id)
+    {
+        EmployeesServices employeesServices = await Employees.GetEmployeeByIdAsync(id);
+        Id = employees.Id;
+        FullName =	employees.FullName;
+        Department = employees.Department;
+        Salary = employees.Salary;
+        mode = MODE.EditDelete;
+    }
+    protected async Task Update()
+    {
+        Employee e = new Employee()
+			{
+				Id = Id,
+				FullName = FullName,
+				Department = Department,
+		    };
+        await employeesService.UpdateEmployeeAsync(Id, e);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Employees employees &&
+               EqualityComparer<List<Employee>>.Default.Equals(employee, employees.employee);
+    }
+
+    public override int GetHashCode() => HashCode.Combine(employee);
+
+    protected async Task Delete()
+    {
+		await employeesService.DeleteEmployeeAsync(Id);
+		ClearFields();
+		await Load();
+		mode = MODE.None;
+	}
+
+
+
+
+}
