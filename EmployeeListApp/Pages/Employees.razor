@@ -1,0 +1,48 @@
+﻿@inject EmployeesService EmployeesService
+
+<h3>Employee List</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Department</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (employees == null || !employees.Any())
+        {
+            <tr>
+                <td colspan="3">No employees found.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Employee> employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            employees = await EmployeesService.GetAllEmployeesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching employees: {ex.Message}");
+            employees = new List<Employee>();
+        }
+    }
+}
