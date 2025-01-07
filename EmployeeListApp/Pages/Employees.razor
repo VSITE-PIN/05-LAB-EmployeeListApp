@@ -21,6 +21,7 @@ else
                 <th>Full Name</th>
                 <th>Department</th>
                 <th>Salary</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +31,9 @@ else
                     <td>@employee.FullName</td>
                     <td>@employee.Department</td>
                     <td>@employee.Salary</td>
+                    <td>
+                        <button @onclick="() => Delete(employee.Id)" class="btn btn-danger">Delete</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -96,5 +100,11 @@ else
         ClearFields();
         await Load();
         mode = MODE.None;
+    }
+
+    protected async Task Delete(string employeeId)
+    {
+        await EmployeesService.DeleteEmployeeAsync(employeeId);
+        await Load();
     }
 }
