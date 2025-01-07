@@ -13,6 +13,8 @@
 }
 else
 {
+    <button @onclick="@Add" class="btn btn-success">Add</button>
+
     <table class="table">
         <thead>
             <tr>
@@ -34,12 +36,65 @@ else
     </table>
 }
 
+@if (employees != null && mode == MODE.Add)
+{
+    <input placeholder="Full Name" @bind="@fullName" />
+    <br />
+    <input placeholder="Department" @bind="@department" />
+    <br />
+    <input placeholder="Salary" @bind="@salary" />
+    <br />
+    <button @onclick="@Insert" class="btn btn-warning">Insert</button>
+}
+
 @code {
     private List<Employee> employees;
+
+    private string id;
+    private string fullName;
+    private string department;
+    private decimal salary;
+
+    private enum MODE { None, Add, EditDelete };
+    private MODE mode = MODE.None;
 
     protected override async Task OnInitializedAsync()
     {
         employees = await EmployeesService.GetAllEmployeesAsync();
     }
-}
 
+    protected async Task Load()
+    {
+        employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+
+    protected void Add()
+    {
+        ClearFields();
+        mode = MODE.Add;
+    }
+
+    protected void ClearFields()
+    {
+        id = string.Empty;
+        fullName = string.Empty;
+        department = string.Empty;
+        salary = 0;
+    }
+
+    protected async Task Insert()
+    {
+        Employee employee = new Employee()
+            {
+                Id = Guid.NewGuid().ToString(),
+                FullName = fullName,
+                Department = department,
+                Salary = salary
+            };
+
+        await EmployeesService.AddEmployeeAsync(employee);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+}
