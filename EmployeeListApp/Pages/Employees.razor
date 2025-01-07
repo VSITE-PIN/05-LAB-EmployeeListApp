@@ -1,0 +1,127 @@
+﻿@using EmployeeListApp.Services
+@using EmployeeListApp.Data
+
+@page "/employees"
+@inject EmployeesService employeesService
+
+<h1>Lista zaposlenika</h1>
+<p>Ovo je lista zaposlenika.</p>
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in employees)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Department</td>
+                    <td>@item.Salary</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="() => EditEmployee(item.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(item.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary" @onclick="ShowAddEmployeeForm">Add Employee</button>
+}
+
+@if (isAddEmployeeFormVisible)
+{
+    <h3>Add New Employee</h3>
+    <EditForm Model="newEmployee" OnValidSubmit="AddEmployee">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <InputText id="fullName" class="form-control" @bind-Value="newEmployee.FullName" />
+        </div>
+
+        <div class="form-group">
+            <label for="department">Department</label>
+            <InputText id="department" class="form-control" @bind-Value="newEmployee.Department" />
+        </div>
+
+        <div class="form-group">
+            <label for="salary">Salary</label>
+            <InputNumber id="salary" class="form-control" @bind-Value="newEmployee.Salary" />
+        </div>
+
+        <button class="btn btn-success" type="submit">Save</button>
+        <button class="btn btn-secondary" @onclick="HideAddEmployeeForm">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<Employee> employees = new();
+    private Employee newEmployee = new Employee();
+    private bool isAddEmployeeFormVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
+        employees = await employeesService.GetEmployeesAsync();
+    }
+
+    private async Task AddEmployee()
+    {
+        if (newEmployee != null)
+        {
+            await employeesService.InsertEmployeeAsync(newEmployee);
+            newEmployee = new Employee();
+            isAddEmployeeFormVisible = false;
+            await LoadEmployees();
+        }
+    }
+
+    private void ShowAddEmployeeForm()
+    {
+        isAddEmployeeFormVisible = true;
+    }
+
+    private void HideAddEmployeeForm()
+    {
+        isAddEmployeeFormVisible = false;
+    }
+
+    private async Task EditEmployee(string id)
+    {
+        var employeeToEdit = await employeesService.GetEmployeeByIdAsync(id);
+        if (employeeToEdit != null)
+        {
+            newEmployee = employeeToEdit;
+            isAddEmployeeFormVisible = true;
+        }
+    }
+
+    private async Task DeleteEmployee(string id)
+    {
+        var result = await employeesService.DeleteEmployeeAsync(id);
+        if (result != null)
+        {
+            await LoadEmployees();
+        }
+    }
+}
