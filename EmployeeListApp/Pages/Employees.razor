@@ -1,0 +1,74 @@
+﻿@page "/employees"
+@using EmployeeListApp.Data
+@using EmployeeListApp.Services
+@inject EmployeesService EmployeesService
+
+<h3>Employees</h3>
+
+@if (employees == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Add New Employee</h4>
+<div>
+    <form>
+        <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" id="fullName" @bind="newEmployee.FullName" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label for="department" class="form-label">Department</label>
+            <input type="text" id="department" @bind="newEmployee.Department" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label for="salary" class="form-label">Salary</label>
+            <input type="number" id="salary" @bind="newEmployee.Salary" class="form-control" />
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="AddEmployee">Add Employee</button>
+    </form>
+</div>
+
+@code {
+    private List<Employee>? employees;
+    private Employee newEmployee = new Employee();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+
+    private async Task AddEmployee()
+    {
+        if (!string.IsNullOrWhiteSpace(newEmployee.FullName) &&
+            !string.IsNullOrWhiteSpace(newEmployee.Department) &&
+            newEmployee.Salary > 0)
+        {
+            await EmployeesService.AddEmployeeAsync(newEmployee);
+            newEmployee = new Employee(); // Reset the form
+            employees = await EmployeesService.GetAllEmployeesAsync(); // Refresh the employee list
+        }
+    }
+}
