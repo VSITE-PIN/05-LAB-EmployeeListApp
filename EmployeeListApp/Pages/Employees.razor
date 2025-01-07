@@ -1,0 +1,46 @@
+﻿@using EmployeeListApp.Services
+@using EmployeeListApp.Data
+@page "/employees"
+@inject EmployeesService EmployeesService
+
+<h3>Employees</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Full Name</th>
+            <th>Department</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (employees != null && employees.Any())
+        {
+            foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.Id</td>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4">No employees found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Employee> employees = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+}

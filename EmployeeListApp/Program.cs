@@ -1,6 +1,8 @@
-using EmployeeListApp.Data;
+using EmployeeListApp.Data; // Namespace za AppDbContext
+using EmployeeListApp.Services; // Namespace za EmployeesService
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore; // Namespace za EF Core
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+// Dodaj EF Core konfiguraciju za AppDbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Koristi ConnectionString iz appsettings.json
+
+// Registriraj EmployeesService za Dependency Injection
+builder.Services.AddScoped<EmployeesService>();
 
 var app = builder.Build();
 
@@ -20,7 +29,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseRouting();
