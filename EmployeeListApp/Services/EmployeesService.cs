@@ -19,7 +19,7 @@ namespace EmployeeListApp.Services
         }
 
         // Dohvati jednog zaposlenika po Id-u
-        public async Task<Employee?> GetEmployeeByIdAsync(string id)
+        public async Task<Employee?> GetEmployeeByIdAsync(int id) // Id je sada tipa int
         {
             return await _context.Employees.FindAsync(id);
         }
@@ -39,7 +39,7 @@ namespace EmployeeListApp.Services
         }
 
         // Obriši zaposlenika po Id-u
-        public async Task DeleteEmployeeAsync(string id)
+        public async Task DeleteEmployeeAsync(int id) // Id je sada tipa int
         {
             var employee = await _context.Employees.FindAsync(id);
             if (employee != null)

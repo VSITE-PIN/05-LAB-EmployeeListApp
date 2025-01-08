@@ -1,0 +1,65 @@
+﻿@using EmployeeListApp.Services
+
+@page "/editemployee/{id:int}"
+@inject EmployeesService EmployeesService
+@inject NavigationManager NavigationManager
+
+@using EmployeeListApp.Data
+
+<h3>Edit Employee</h3>
+
+@if (employee == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input type="text" id="fullName" class="form-control" @bind="employee.FullName" />
+    </div>
+    <div class="form-group">
+        <label for="department">Department</label>
+        <input type="text" id="department" class="form-control" @bind="employee.Department" />
+    </div>
+    <div class="form-group">
+        <label for="salary">Salary</label>
+        <input type="number" id="salary" class="form-control" @bind="employee.Salary" />
+    </div>
+
+    <button class="btn btn-primary" @onclick="SaveEmployee">Save</button>
+    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Employee? employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Dohvati zaposlenika po ID-u
+        employee = await EmployeesService.GetEmployeeByIdAsync(id);
+
+        // Ako zaposlenik ne postoji
+        if (employee == null)
+        {
+            NavigationManager.NavigateTo("/employees");
+        }
+    }
+
+    private async Task SaveEmployee()
+    {
+        if (employee != null)
+        {
+            await EmployeesService.UpdateEmployeeAsync(employee);
+            NavigationManager.NavigateTo("/employees");
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/employees");
+    }
+}

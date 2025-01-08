@@ -1,0 +1,54 @@
+﻿@using EmployeeListApp.Services
+@using EmployeeListApp.Data
+
+@page "/addemployee"
+@inject EmployeesService EmployeesService
+@inject NavigationManager NavigationManager
+
+<h3>Add Employee</h3>
+
+<div class="form-group">
+    <label for="fullName">Full Name</label>
+    <input type="text" id="fullName" class="form-control" @bind="employee.FullName" />
+</div>
+<div class="form-group">
+    <label for="department">Department</label>
+    <input type="text" id="department" class="form-control" @bind="employee.Department" />
+</div>
+<div class="form-group">
+    <label for="salary">Salary</label>
+    <input type="number" id="salary" class="form-control" @bind="employee.Salary" />
+</div>
+
+<button class="btn btn-primary" @onclick="SaveEmployee">Save</button>
+
+@code {
+    private Employee employee = new Employee
+        {
+            FullName = "",
+            Department = "",
+            Salary = 0
+        };
+
+    private async Task SaveEmployee()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(employee.FullName) ||
+                string.IsNullOrWhiteSpace(employee.Department) ||
+                employee.Salary <= 0)
+            {
+                // Validacija
+                return;
+            }
+
+            await EmployeesService.AddEmployeeAsync(employee); // Spremi zaposlenika u bazu
+            NavigationManager.NavigateTo("/employees"); // Preusmjeri na popis zaposlenika
+        }
+        catch (Exception ex)
+        {
+            // Dodati rukovanje greškama po potrebi
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

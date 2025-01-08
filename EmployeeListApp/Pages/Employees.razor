@@ -2,6 +2,7 @@
 @using EmployeeListApp.Data
 @page "/employees"
 @inject EmployeesService EmployeesService
+@inject IJSRuntime JSRuntime
 
 <h3>Employees</h3>
 
@@ -12,6 +13,7 @@
             <th>Full Name</th>
             <th>Department</th>
             <th>Salary</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -24,13 +26,17 @@
                     <td>@employee.FullName</td>
                     <td>@employee.Department</td>
                     <td>@employee.Salary</td>
+                    <td>
+                        <a class="btn btn-warning btn-sm" href="/editemployee/@employee.Id">Edit</a>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteEmployee(employee.Id)">Delete</button>
+                    </td>
                 </tr>
             }
         }
         else
         {
             <tr>
-                <td colspan="4">No employees found.</td>
+                <td colspan="5">No employees found.</td>
             </tr>
         }
     </tbody>
@@ -42,5 +48,15 @@
     protected override async Task OnInitializedAsync()
     {
         employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+
+    private async Task DeleteEmployee(int id)
+    {
+        var confirm = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete employee with ID {id}?");
+        if (confirm)
+        {
+            await EmployeesService.DeleteEmployeeAsync(id);
+            employees = await EmployeesService.GetAllEmployeesAsync(); // Refresh employee list
+        }
     }
 }
