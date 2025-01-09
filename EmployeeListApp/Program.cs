@@ -1,47 +1,36 @@
-using Microsoft.EntityFrameworkCore;
 using EmployeeListApp.Data;
+using EmployeeListApp.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 
-namespace EmployeeListApp.Services
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<EmployeesService>();
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddSingleton<WeatherForecastService>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    public class EmployeesService
-    {
-        private readonly AppDbContext _context;
-
-        public EmployeesService(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task AddEmployee(Employee employee)
-        {
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateEmployee(Employee employee)
-        {
-            _context.Employees.Update(employee);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<List<Employee>> GetAllEmployees()
-        {
-            return await _context.Employees.ToListAsync();
-        }
-
-        public async Task<Employee> GetEmployeeById(string id)
-        {
-            return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        public async Task DeleteEmployee(string id)
-        {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee != null)
-            {
-                _context.Employees.Remove(employee);
-                await _context.SaveChangesAsync();
-            }
-        }
-    }
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.MapBlazorHub();
+app.MapFallbackToPage("/_Host");
+
+app.Run();
