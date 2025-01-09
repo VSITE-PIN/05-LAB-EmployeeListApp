@@ -1,0 +1,125 @@
+﻿<h3>Employees</h3>
+
+
+@page "/Employees"
+@inject EmployeesService employeesService
+<h1>My Employees List</h1>
+<p>This component demonstrates managing a Employees list.</p>
+@if (employees == null)
+{
+ <p><em>Loading...</em></p>
+}
+else
+{
+ <table class="table">
+ <thead>
+ <tr>
+ <th>ID</th>
+                        <th>FullName</th>
+                        <th>Department</th>
+                        <th>Salary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in employees)
+                    {
+                        <tr>
+                            <td>@item.FullName</td>
+                            <td>@item.Department</td>
+                            <td>@item.Salary</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @code {
+        List<Employee> employees;
+        protected override async Task OnInitializedAsync()
+        {
+            await Load();
+        }
+        protected async Task Load()
+        {
+            employees = await employeesService.GetEmployeesAsync();
+        }
+    @code {
+        string id;
+        string FullName;
+        string Department;
+        decimal Salary;
+        private enum MODE { None, Add, EditDelete };
+        MODE mode = MODE.None;
+
+
+
+        List<Employee> employees;
+        Employee employee;
+        protected override async Task OnInitializedAsync()
+        {
+            await Load();
+        }
+        protected async Task Load()
+        {
+            employees = await employeesService.GetEmployeesAsync();
+        }
+        protected void Add()
+        {
+            ClearFields();
+            mode = MODE.Add;
+        }
+        //ova metoda složi da resetiramo vrijednosti u varijablama koje nam služe za //dohvaćanje podataka od korisnika
+        protected void ClearFields()
+        {
+            id = string.Empty;
+            FullName = string.Empty;
+            Department = string.Empty;
+            Salary = 0;
+        }
+        protected async Task Insert()
+        {
+            Employee e = new Employee()
+            {
+                Id = Guid.NewGuid().ToString(),
+                FullName = fullname,
+                Department = department,
+                Salary = salary
+            };
+            await employeesService.InsertEmployeeAsync(e);
+            ClearFields();
+            await Load();
+            mode = MODE.None;
+        }
+        protected async Task Show(string id)
+        {
+            employee = await employeesService.GetEmployeeByIdAsync(id);
+            id = employee.Id;
+            FullName = employee.FullName;
+            Department = employee.Department;
+            Salary = employee.Salary;
+            mode = MODE.EditDelete;
+        }
+        protected async Task Update()
+        {
+            Employee e = new Employee()
+            {
+                Id = employee.Id,
+                FullName = fullname,
+                Department = department,
+                Salary = salary
+            };
+            await employeesService.UpdateEmployeeAsync(employee.Id, e);
+            ClearFields();
+            await Load();
+            mode = MODE.None;
+        }
+        protected async Task Delete()
+        {
+            await employeesService.DeleteEmployeeAsync(employee.Id);
+            ClearFields();
+            await Load();
+            mode = MODE.None;
+        }
+
+    }
+}
+

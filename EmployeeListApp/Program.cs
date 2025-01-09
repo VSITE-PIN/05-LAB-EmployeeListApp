@@ -1,13 +1,21 @@
 using EmployeeListApp.Data;
+using EmployeeListApp.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddScoped<EmployeesService>();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnString")
+ ?? throw new InvalidOperationException("Connection string DefaultConnString not found.")));
 
 var app = builder.Build();
 
@@ -18,6 +26,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 
