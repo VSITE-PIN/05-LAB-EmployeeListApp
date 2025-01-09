@@ -26,7 +26,7 @@ else
         <tbody>
             @foreach (var item in employees)
             {
-                <tr @onclick = "@(() => Show(item.Id))" >
+                <tr @onclick="@(() => Show(item.Id))">
                     <td>@item.Id</td>
                     <td>@item.FullName</td>
                     <td>@item.Department</td>
@@ -39,37 +39,38 @@ else
 
 @if (employees != null && mode == MODE.Add)
 {
-    <input placeholder="Id" @bind="@Id" type="number" />
+    <input placeholder="Id" @bind="@id" type="number" />
     <br />
-    <input placeholder="FullName" @bind="@FullName" />
+    <input placeholder="FullName" @bind="@fullname" />
     <br />
-    <input placeholder="Department" @bind="@Department" />
+    <input placeholder="Department" @bind="@department" />
     <br />
-    <input placeholder="Salary" @bind="@Salary" type="number" />
+    <input placeholder="Salary" @bind="@salary" type="number" />
     <br />
     <button @onclick="@Insert" class="btn btn-warning">Insert</button>
 }
-@if (employees != null && mode == MODE.EditDelete) // Update & Delete form
+
+@if (employees != null && mode == MODE.EditDelete)
 {
-    <input type="hidden" @bind="@Id" />
+    <input type="hidden" @bind="@id" />
     <br />
-    <input placeholder="First Name" @bind="@FullName" />
+    <input placeholder="Full Name" @bind="@fullname" />
     <br />
-    <input placeholder="Last Name" @bind="@Department" />
+    <input placeholder="Department" @bind="@department" />
     <br />
-    <input placeholder="School" @bind="@Salary" />
+    <input placeholder="Salary" @bind="@salary" type="number" />
     <br />
     <button @onclick="@Update" class="btn btn-primary">Update</button>
     <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
     <button @onclick="@Delete" class="btn btn-danger">Delete</button>
 }
-@code {
-    Employee employee;
 
-    string Id;
-    string FullName;
-    string Department;
-    decimal Salary; 
+@code {
+    string id;
+    string fullname;
+    string department;
+    decimal salary;
+
     private enum MODE { None, Add, EditDelete };
     MODE mode = MODE.None;
 
@@ -90,48 +91,50 @@ else
         ClearFields();
         mode = MODE.Add;
     }
+
     protected async Task Show(string id)
     {
-        var employee = await employeeService.GetEmployeeByIdAsync(id); 
-        Id = employee.Id; 
-        FullName = employee.FullName; 
-        Department = employee.Department; 
-        Salary = employee.Salary; 
-        mode = MODE.EditDelete; 
-    }
-
-    protected async Task Update()
-    {
-        Employee s = new Employee()
-            {
-                Id = Id,
-                FullName = FullName,
-                Department = Department,
-                Salary = Salary
-            };
-        await employeeService.UpdateEmployeeAsync(Id, s);
-        ClearFields();
-        await Load();
-        mode = MODE.None;
-    }
-    protected async Task Delete()
-    {
-        await employeeService.DeleteEmployeeAsync(Id);
-        ClearFields();
-        await Load();
-        mode = MODE.None;
+        var employee = await employeeService.GetEmployeeByIdAsync(id);
+        this.id = employee.Id;
+        fullname = employee.FullName;
+        department = employee.Department;
+        salary = employee.Salary;
+        mode = MODE.EditDelete;
     }
 
     protected async Task Insert()
     {
-        Employee s = new Employee()
+        Employee newEmployee = new Employee()
             {
-                Id = Id,  
-                FullName = FullName,  
-                Department = Department,
-                Salary = Salary
+                Id = Guid.NewGuid().ToString(),
+                FullName = fullname,
+                Department = department,
+                Salary = salary
             };
-        await employeeService.InsertEmployeeAsync(s);
+        await employeeService.InsertEmployeeAsync(newEmployee);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+    protected async Task Update()
+    {
+        Employee updatedEmployee = new Employee()
+            {
+                Id = id,
+                FullName = fullname,
+                Department = department,
+                Salary = salary
+            };
+        await employeeService.UpdateEmployeeAsync(id, updatedEmployee);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+    protected async Task Delete()
+    {
+        await employeeService.DeleteEmployeeAsync(id);
         ClearFields();
         await Load();
         mode = MODE.None;
@@ -139,9 +142,9 @@ else
 
     protected void ClearFields()
     {
-        Id = string.Empty;
-        FullName = string.Empty;
-        Department = string.Empty;
-        Salary = 0;  
+        id = string.Empty;
+        fullname = string.Empty;
+        department = string.Empty;
+        salary = 0;
     }
 }
