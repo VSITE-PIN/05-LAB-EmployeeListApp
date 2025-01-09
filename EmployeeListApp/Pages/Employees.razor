@@ -1,0 +1,46 @@
+﻿@page "/employees"
+@using EmployeeListApp.Data
+@using EmployeeListApp.Services
+@inject EmployeesService EmployeesService
+
+<h3>Zaposlenici</h3>
+
+@if (employees == null)
+{
+    <p>Učitavanje podataka...</p>
+}
+else if (!employees.Any())
+{
+    <p>Nema zaposlenika za prikaz.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ime i prezime</th>
+                <th>Odjel</th>
+                <th>Plata</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Employee>? employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+}
