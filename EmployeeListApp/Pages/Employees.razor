@@ -1,0 +1,147 @@
+﻿@page "/employees"
+@inject EmployeeService employeeService
+
+<h3>Prikaz Svih Zaposlenika</h3>
+
+<h1>My Employee List</h1>
+<p>This component demonstrates managing an employee list.</p>
+
+<button @onclick="Add" class="btn btn-success">Add</button>
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>FullName</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in employees)
+            {
+                <tr @onclick = "@(() => Show(item.Id))" >
+                    <td>@item.Id</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Department</td>
+                    <td>@item.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (employees != null && mode == MODE.Add)
+{
+    <input placeholder="Id" @bind="@Id" type="number" />
+    <br />
+    <input placeholder="FullName" @bind="@FullName" />
+    <br />
+    <input placeholder="Department" @bind="@Department" />
+    <br />
+    <input placeholder="Salary" @bind="@Salary" type="number" />
+    <br />
+    <button @onclick="@Insert" class="btn btn-warning">Insert</button>
+}
+@if (employees != null && mode == MODE.EditDelete) // Update & Delete form
+{
+    <input type="hidden" @bind="@Id" />
+    <br />
+    <input placeholder="First Name" @bind="@FullName" />
+    <br />
+    <input placeholder="Last Name" @bind="@Department" />
+    <br />
+    <input placeholder="School" @bind="@Salary" />
+    <br />
+    <button @onclick="@Update" class="btn btn-primary">Update</button>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <button @onclick="@Delete" class="btn btn-danger">Delete</button>
+}
+@code {
+    Employee employee;
+
+    string Id;
+    string FullName;
+    string Department;
+    decimal Salary; 
+    private enum MODE { None, Add, EditDelete };
+    MODE mode = MODE.None;
+
+    List<Employee> employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    protected async Task Load()
+    {
+        employees = await employeeService.GetEmployeeAsync();
+    }
+
+    protected void Add()
+    {
+        ClearFields();
+        mode = MODE.Add;
+    }
+    protected async Task Show(string id)
+    {
+        var employee = await employeeService.GetEmployeeByIdAsync(id); 
+        Id = employee.Id; 
+        FullName = employee.FullName; 
+        Department = employee.Department; 
+        Salary = employee.Salary; 
+        mode = MODE.EditDelete; 
+    }
+
+    protected async Task Update()
+    {
+        Employee s = new Employee()
+            {
+                Id = Id,
+                FullName = FullName,
+                Department = Department,
+                Salary = Salary
+            };
+        await employeeService.UpdateEmployeeAsync(Id, s);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+    protected async Task Delete()
+    {
+        await employeeService.DeleteEmployeeAsync(Id);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+    protected async Task Insert()
+    {
+        Employee s = new Employee()
+            {
+                Id = Id,  
+                FullName = FullName,  
+                Department = Department,
+                Salary = Salary
+            };
+        await employeeService.InsertEmployeeAsync(s);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
+    protected void ClearFields()
+    {
+        Id = string.Empty;
+        FullName = string.Empty;
+        Department = string.Empty;
+        Salary = 0;  
+    }
+}
