@@ -3,24 +3,20 @@
 @using EmployeeListApp.Services
 @inject EmployeesService EmployeesService
 
-<h3>Zaposlenici</h3>
+<h3>Employees</h3>
 
 @if (employees == null)
 {
-    <p>Učitavanje podataka...</p>
-}
-else if (!employees.Any())
-{
-    <p>Nema zaposlenika za prikaz.</p>
+    <p><em>Loading...</em></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Ime i prezime</th>
-                <th>Odjel</th>
-                <th>Plata</th>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
             </tr>
         </thead>
         <tbody>
@@ -37,10 +33,11 @@ else
 }
 
 @code {
-    private List<Employee>? employees;
+    private List<Employee> employees;  // Declare the variable
 
     protected override async Task OnInitializedAsync()
     {
-        employees = await EmployeesService.GetAllEmployeesAsync();
+        // Use the correct method name
+        employees = await EmployeesService.GetAllEmployees();
     }
 }
