@@ -1,20 +1,26 @@
 ﻿@page "/employees"
+@using EmployeeListApp.Data
+@using EmployeeListApp.Services
 @inject EmployeesService EmployeesService
 
-<h3>Employees</h3>
+<h3>Zaposlenici</h3>
 
 @if (employees == null)
 {
-    <p><em>Loading...</em></p>
+    <p>Učitavanje podataka...</p>
+}
+else if (!employees.Any())
+{
+    <p>Nema zaposlenika za prikaz.</p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Full Name</th>
-                <th>Department</th>
-                <th>Salary</th>
+                <th>Ime i prezime</th>
+                <th>Odjel</th>
+                <th>Plata</th>
             </tr>
         </thead>
         <tbody>
@@ -31,11 +37,10 @@ else
 }
 
 @code {
-    private List<Employee>
-    employees;
+    private List<Employee>? employees;
 
     protected override async Task OnInitializedAsync()
     {
-    employees = await EmployeesService.GetAllEmployees();
+        employees = await EmployeesService.GetAllEmployeesAsync();
     }
-    }
+}
