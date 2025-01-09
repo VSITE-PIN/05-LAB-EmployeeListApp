@@ -1,21 +1,47 @@
-using EmployeeListApp.Data;
-using EmployeeListApp.Services;
 using Microsoft.EntityFrameworkCore;
+using EmployeeListApp.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace EmployeeListApp.Services
+{
+    public class EmployeesService
+    {
+        private readonly AppDbContext _context;
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveComponents()
-    .AddDbContext<AppDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        public EmployeesService(AppDbContext context)
+        {
+            _context = context;
+        }
 
-builder.Services.AddScoped<EmployeesService>();
-builder.Services.AddControllersWithViews();
-builder.Services.AddRazorPages();
+        public async Task AddEmployee(Employee employee)
+        {
+            _context.Employees.Add(employee);
+            await _context.SaveChangesAsync();
+        }
 
-var app = builder.Build();
+        public async Task UpdateEmployee(Employee employee)
+        {
+            _context.Employees.Update(employee);
+            await _context.SaveChangesAsync();
+        }
 
-using EmployeeListApp.Services;
+        public async Task<List<Employee>> GetAllEmployees()
+        {
+            return await _context.Employees.ToListAsync();
+        }
 
-builder.Services.AddScoped<EmployeesService>();
+        public async Task<Employee> GetEmployeeById(string id)
+        {
+            return await _context.Employees.FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task DeleteEmployee(string id)
+        {
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee != null)
+            {
+                _context.Employees.Remove(employee);
+                await _context.SaveChangesAsync();
+            }
+        }
+    }
+}
