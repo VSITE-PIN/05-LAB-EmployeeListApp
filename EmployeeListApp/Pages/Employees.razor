@@ -1,0 +1,133 @@
+﻿@using EmployeeListApp.Services;
+@using EmployeeListApp.Data;
+@page "/employees"
+@inject EmployeesService EmployeesService
+
+<h1>Employee Management</h1>
+
+@if (mode == MODE.Add || mode == MODE.Edit)
+{
+    <div>
+        <input placeholder="Full Name" @bind="@fullName" />
+        <br />
+        <input placeholder="Department" @bind="@department" />
+        <br />
+        <input placeholder="Salary" type="number" @bind="@salary" />
+        <br />
+        <button class="btn btn-primary" @onclick="@SaveEmployee">Save</button>
+        <button class="btn btn-secondary" @onclick="@Cancel">Cancel</button>
+    </div>
+}
+
+@if (mode == MODE.None)
+{
+    <button class="btn btn-success" @onclick="@AddEmployee">Add Employee</button>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="@(() => EditEmployee(employee))">Edit</button>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteEmployee(employee.Id))">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private enum MODE { None, Add, Edit }
+    private MODE mode = MODE.None;
+
+    private List<Employee> employees = new();
+    private int employeeId; 
+    private string fullName;
+    private string department;
+    private decimal salary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
+        employees = await EmployeesService.GetAllEmployeesAsync();
+    }
+
+    private void AddEmployee()
+    {
+        ClearFields();
+        mode = MODE.Add;
+    }
+
+    private void EditEmployee(Employee employee)
+    {
+        employeeId = employee.Id;
+        fullName = employee.FullName;
+        department = employee.Department;
+        salary = employee.Salary;
+        mode = MODE.Edit;
+    }
+
+    private async Task SaveEmployee()
+    {
+        if (mode == MODE.Add)
+        {
+            var newEmployee = new Employee
+                {
+                    FullName = fullName,
+                    Department = department,
+                    Salary = salary
+                };
+            await EmployeesService.AddEmployeeAsync(newEmployee);
+        }
+        else if (mode == MODE.Edit)
+        {
+            var updatedEmployee = new Employee
+                {
+                    Id = employeeId,
+                    FullName = fullName,
+                    Department = department,
+                    Salary = salary
+                };
+            await EmployeesService.UpdateEmployeeAsync(updatedEmployee, employeeId);
+        }
+
+        await LoadEmployees();
+        mode = MODE.None;
+    }
+
+    private async Task DeleteEmployee(int id)
+    {
+        await EmployeesService.DeleteEmployeeAsync(id);
+        await LoadEmployees();
+    }
+
+    private void Cancel()
+    {
+        ClearFields();
+        mode = MODE.None;
+    }
+
+    private void ClearFields()
+    {
+        employeeId = 0;
+        fullName = string.Empty;
+        department = string.Empty;
+        salary = 0;
+    }
+}
