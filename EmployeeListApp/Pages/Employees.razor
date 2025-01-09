@@ -9,6 +9,7 @@
 }
 else
 {
+    <button @onclick="@Add" class="btn btn-success">Add</button>
     <table class="table">
         <thead>
             <tr>
@@ -21,7 +22,7 @@ else
         <tbody>
             @foreach (var item in employees)
             {
-                <tr>
+                <tr @onclick="@(() => Show(item.Id))">
                     <td>@item.FullName</td>
                     <td>@item.Department</td>
                     <td>@item.Salary</td>
@@ -30,7 +31,30 @@ else
         </tbody>
     </table>
 }
-
+@if (employees != null && mode == MODE.Add)
+{
+    <input placeholder="FullName" @bind="@fullName" />
+    <br />
+    <input placeholder="Department" @bind="@department" />
+    <br />
+    <input placeholder="Salary" @bind="@salary" />
+    <br />
+    <button @onclick="@Insert" class="btn btn-warning">Insert</button>
+}
+@if (employees != null && mode == MODE.EditDelete) // Update & Delete form
+{
+    <input type="hidden" @bind="@id" />
+    <br />
+    <input placeholder="FullName" @bind="@fullName" />
+    <br />
+    <input placeholder="Department" @bind="@department" />
+    <br />
+    <input placeholder="Salary" @bind="@salary" />
+    <br />
+    <button @onclick="@Update" class="btn btn-primary">Update</button>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <button @onclick="@Delete" class="btn btn-danger">Delete</button>
+}
 @code {
     string id;
     string fullName;
