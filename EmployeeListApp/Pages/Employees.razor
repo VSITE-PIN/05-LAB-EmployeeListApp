@@ -1,0 +1,32 @@
+﻿@page "/employees"
+@inject EmployeesService EmployeesService
+
+<h3>Employees</h3>
+
+@if (employees == null)
+{
+    <p>Loading...</p>
+}
+else if (employees.Count == 0)
+{
+    <p>No employees found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var employee in employees)
+        {
+            <li>@employee.FullName (@employee.Department) - @employee.Salary</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Employee> employees = new List<Employee>(); 
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        employees = await EmployeesService.GetAllEmployees();
+    }
+}
