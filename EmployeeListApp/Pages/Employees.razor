@@ -1,0 +1,82 @@
+﻿@using EmployeeListApp.Data
+@using EmployeeListApp.Services
+
+@page "/employees"
+@inject EmployeesService employeesService
+
+<h1>Employee Management</h1>
+
+@if (employees == null)
+{
+    <p><em>Loading employees...</em></p>
+}
+else if (!employees.Any())
+{
+    <p>No employees found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in employees)
+            {
+                <tr>
+                    <td>@employee.Id</td>
+                    <td>@employee.FullName</td>
+                    <td>@employee.Department</td>
+                    <td>@employee.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@* <h2>Add New Employee</h2>
+<EditForm Model="newEmployee" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="FullName">Full Name:</label>
+        <InputText id="FullName" @bind-Value="newEmployee.FullName" class="form-control" />
+    </div>
+
+    <div>
+        <label for="Department">Department:</label>
+        <InputText id="Department" @bind-Value="newEmployee.Department" class="form-control" />
+    </div>
+
+    <div>
+        <label for="Salary">Salary:</label>
+        <InputNumber id="Salary" @bind-Value="newEmployee.Salary" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Employee</button>
+</EditForm> *@
+
+@code {
+    List<Employee> employees;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            employees = await employeesService.GetAllEmployeesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching employees: {ex.Message}");
+            employees = new List<Employee>();
+        }
+    }
+        
+}
