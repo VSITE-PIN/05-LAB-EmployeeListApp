@@ -7,6 +7,11 @@
         <PageTitle>Not found</PageTitle>
         <LayoutView Layout="@typeof(MainLayout)">
             <p role="alert">Sorry, there's nothing at this address.</p>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="employees">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Employees
+                </NavLink>
+            </div>
         </LayoutView>
     </NotFound>
 </Router>
