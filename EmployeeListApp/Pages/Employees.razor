@@ -12,6 +12,7 @@ else
     <table class="table">
         <thead>
             <tr>
+
                 <th>Id</th>
                 <th>FullName</th>
                 <th>Department</th>
@@ -21,7 +22,7 @@ else
         <tbody>
             @foreach (var item in employees)
             {
-                <tr>
+                <tr @onclick="@(() => Show(item.Id))">
                     <td>@item.Id</td>
                     <td>@item.FullName</td>
                     <td>@item.Department</td>
@@ -41,6 +42,21 @@ else
     <br />
     <button @onclick="@Insert" class="btn btn-warning">Insert</button>
 }
+@if (employees != null && mode == MODE.EditDelete) // Update & Delete form
+{
+    <input type="hidden" @bind="@id" />
+    <br />
+    <input placeholder="Full Name" @bind="@fullname" />
+    <br />
+    <input placeholder="Department" @bind="@department" />
+    <br />
+    <input placeholder="Salary" @bind="@salary" />
+    <br />
+    <button @onclick="@Update" class="btn btn-primary">Update</button>
+    <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <button @onclick="@Delete" class="btn btn-danger">Delete</button>
+}
+
 
 @code 
 
@@ -49,6 +65,9 @@ else
     string fullname;
     string department;
     string salary;
+    private string employeeId;
+
+    Employee employee;
 
     private enum MODE { None, Add, EditDelete};
     MODE mode = MODE.None;
@@ -88,6 +107,47 @@ else
         await Load();
         mode = MODE.None;
     }
+    protected async Task Show(string id)
+    {
+        employee = await employeeService.GetEmployeeByIdAsync(id);
+        id = employee.Id;
+        fullname = employee.FullName;
+        department = employee.Department;
+        salary = employee.Salary.ToString(); // Convert decimal to string
+        mode = MODE.EditDelete;
+    }
+    protected async Task Update()
+    {
+        if (decimal.TryParse(salary, out decimal parsedSalary))
+        {
+            Employee s = new Employee()
+                {
+                    Id = employeeId,
+                    FullName = fullname,
+                    Department = department,
+                    Salary = parsedSalary // Convert string to decimal
+                };
+
+            await employeeService.UpdateEmployeeAsync(employeeId, s);
+            ClearFields();
+            await Load();
+            mode = MODE.None;
+        }
+        else
+        {
+            // Handle invalid salary input
+            Console.WriteLine("Invalid salary format.");
+        }
+    }
+
+    protected async Task Delete()
+    {
+        await employeeService.DeleteEmployeeAsync(employeeId);
+        ClearFields();
+        await Load();
+        mode = MODE.None;
+    }
+
 
 
 } 
