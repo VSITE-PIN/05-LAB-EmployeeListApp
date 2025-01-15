@@ -1,4 +1,5 @@
 using EmployeeListApp.Data;
+using EmployeeListApp.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BookContext")
                          ?? throw new InvalidOperationException("Connection string BookContext not found.")));
 
+builder.Services.AddScoped<EmployeesService>();
 
 // Add services to the container.
 builder.Services.AddRazorPages();
