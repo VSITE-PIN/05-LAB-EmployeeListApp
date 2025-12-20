@@ -1,8 +1,19 @@
+using EmployeeListApp.Services;
+using Microsoft.EntityFrameworkCore;
 using EmployeeListApp.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string not found.")
+    )
+);
+
+builder.Services.AddScoped<EmployeesService>();
 
 // Add services to the container.
 builder.Services.AddRazorPages();
