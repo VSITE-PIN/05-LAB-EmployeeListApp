@@ -1,0 +1,157 @@
+﻿@page "/employees"
+@using EmployeeListApp.Data
+@using EmployeeListApp.Services
+@inject EmployeesService employeesService
+
+<h3>Employees List</h3>
+
+<button class="btn btn-success" @onclick="ShowAddForm">Add Employee</button>
+
+@if (currentMode == Mode.Add || currentMode == Mode.EditDelete)
+{
+    <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px;">
+        <h4>New Employee</h4>
+        
+        <label>Name:</label>
+        <input placeholder="Full Name" @bind="fullName" />
+        <br /><br />
+        
+        <label>Department:</label>
+        <input placeholder="Department" @bind="department" />
+        <br /><br />
+        
+        <label>Salary:</label>
+        <input type="number" placeholder="Salary" @bind="salary" />
+        <br /><br />
+
+        @if (currentMode == Mode.Add)
+        {
+            <button class="btn btn-primary" @onclick="InsertEmployee">Insert</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="UpdateEmployee">Update</button>
+            <button class="btn btn-danger" @onclick="DeleteEmployee">Delete</button>
+        }
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </div>
+    <br />
+}
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in employees)
+            {
+                <tr @onclick="() => ShowEditForm(emp.Id)">
+                    <td>@emp.FullName</td>
+                    <td>@emp.Department</td>
+                    <td>@emp.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Employee> employees;
+
+    // 1. Varijable za unos podataka s forme
+    string id;
+    string fullName;
+    string department;
+    decimal salary;
+
+    // 2. Enum za praćenje stanja (jesam li u "listi" ili "dodavanju")
+    private enum Mode { None, Add, EditDelete } // dodan delete
+    Mode currentMode = Mode.None;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    // Učitavanje izdvojeno u posebnu metodu
+    protected async Task Load()
+    {
+        employees = await employeesService.GetEmployeesAsync();
+    }
+
+    // Metoda koja priprema formu za dodavanje
+    protected void ShowAddForm()
+    {
+        fullName = string.Empty;
+        department = string.Empty;
+        salary = 0;
+        currentMode = Mode.Add;
+    }
+
+    // Metoda koja sprema novog zaposlenika u bazu
+    protected async Task InsertEmployee()
+    {
+        Employee e = new Employee
+        {
+            Id = Guid.NewGuid().ToString(), // generira novi jedinstveni ID
+            FullName = fullName,
+            Department = department,
+            Salary = salary
+        };
+
+        await employeesService.AddEmployeeAsync(e); // šalje u bazu
+        
+        await Load(); // refresha tablicu
+        currentMode = Mode.None; // zatvara formu
+    }
+    
+    // Metoda za odustajanje
+    protected void Cancel()
+    {
+        currentMode = Mode.None;
+    }
+    // Metoda koja se pozove kad kliknemo na red u tablici
+    protected void ShowEditForm(string employeeId)
+    {
+        var emp = employees.FirstOrDefault(x => x.Id == employeeId);
+        if (emp != null)
+        {
+            id = emp.Id;
+            fullName = emp.FullName;
+            department = emp.Department;
+            salary = emp.Salary;
+            currentMode = Mode.EditDelete;
+        }
+    }
+    protected async Task UpdateEmployee()
+    {
+        Employee e = new Employee
+        {
+            Id = id,
+            FullName = fullName,
+            Department = department,
+            Salary = salary
+        };
+
+        await employeesService.UpdateEmployeeAsync(e);
+        await Load();
+        currentMode = Mode.None;
+    }
+
+    protected async Task DeleteEmployee()
+    {
+        await employeesService.DeleteEmployeeAsync(id);
+        await Load();
+        currentMode = Mode.None;
+    }
+}
