@@ -1,9 +1,8 @@
 ﻿@page "/employees"
-@inject EmployeesService employeesService
+@using EmployeeListApp.Data
+@inject EmployeesService EmployeesService
 
-
-<h1>Employees</h1>
-
+<h1>Employee List</h1>
 
 @if (employees == null)
 {
@@ -14,33 +13,29 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Full Name</th>
                 <th>Department</th>
                 <th>Salary</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var e in employees)
+            @foreach (var emp in employees)
             {
                 <tr>
-                    <td>@e.Id</td>
-                    <td>@e.FullName</td>
-                    <td>@e.Department</td>
-                    <td>@e.Salary</td>
+                    <td>@emp.FullName</td>
+                    <td>@emp.Department</td>
+                    <td>@emp.Salary.ToString("C")</td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
-
 @code {
-    List<Employee> employees;
-
+    private List<Employee> employees;
 
     protected override async Task OnInitializedAsync()
     {
-        employees = await employeesService.GetEmployeesAsync();
+        employees = await EmployeesService.GetEmployeesAsync();
     }
 }
