@@ -1,0 +1,48 @@
+﻿@using EmployeeListApp.Data
+@using EmployeeListApp.Services
+
+@page "/employees"
+@inject EmployeesService employeesService
+
+<h1>Employees</h1>
+<p>List of employees from database.</p>
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (employees.Count == 0)
+{
+    <p><em>No employees found. Add a few records in DB to test.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full name</th>
+                <th>Department</th>
+                <th class="text-end">Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in employees)
+            {
+                <tr>
+                    <td>@e.FullName</td>
+                    <td>@e.Department</td>
+                    <td class="text-end">@e.Salary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Employee>? employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeesService.GetEmployeesAsync();
+    }
+}
